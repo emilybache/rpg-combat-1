@@ -5,6 +5,8 @@
 We implement the RPG Combat rules engine in TypeScript using **TDD** (test-first, then refactor).
 Each iteration delivers one vertical slice of the user-stories, always leaving the build green.
 
+**Current status:** Iterations 0-4 are complete and the codebase is green. The remaining work is Iterations 5-7 below.
+
 ---
 
 ## Tech Stack
@@ -29,9 +31,9 @@ Each iteration delivers one vertical slice of the user-stories, always leaving t
 ```
 src/
   character.ts          # Character entity
+  faction-membership.ts # Current faction membership helper
   magical-object.ts     # MagicalObject base / subtypes
   index.ts              # barrel export
-test/
   character.test.ts
   magical-object.test.ts
 ```
@@ -143,13 +145,15 @@ Covers **user story: Factions**.
 
 Covers **user story: Magical Objects §1-3**.
 
+**Design note:** replace the iteration-0 placeholder module and skeleton test with real object behaviour in this iteration. Prefer subtype-specific capabilities over adding no-op methods for unsupported actions.
+
 ### Rules
 
 - `MagicalObject` has a fixed maximum health set at creation; starts at that maximum.
 - Reduced to 0 → Destroyed.
 - Two subtypes:
-  - `HealingObject`: characters can draw health from it (up to their max and the object's remaining health); cannot deal damage.
-  - `MagicalWeapon`: deals a fixed amount of damage; health −1 each use; cannot give health.
+  - `HealingObject`: characters can draw health from it (up to their max and the object's remaining health); the object loses the transferred health.
+  - `MagicalWeapon`: deals a fixed amount of damage; health −1 each use.
 - Magical Objects do not belong to factions.
 - Characters cannot heal a Magical Object.
 
@@ -161,10 +165,10 @@ Covers **user story: Magical Objects §1-3**.
 | 2   | `magical object is destroyed when health reaches 0`                        |
 | 3   | `healing object restores character health up to character max`             |
 | 4   | `healing object restores character health up to object's remaining health` |
-| 5   | `healing object cannot deal damage`                                        |
-| 6   | `magical weapon deals fixed damage`                                        |
+| 5   | `healing object health is reduced by the amount transferred`               |
+| 6   | `magical weapon deals its fixed damage to a character target`              |
 | 7   | `magical weapon loses 1 health each use`                                   |
-| 8   | `magical weapon cannot give health to a character`                         |
+| 8   | `destroyed magical weapon cannot be used again`                            |
 | 9   | `character cannot heal a magical object`                                   |
 
 ---
@@ -173,9 +177,13 @@ Covers **user story: Magical Objects §1-3**.
 
 Covers **user story: Changing Level §1 and §3**.
 
+**Design note:** track survived-damage progression separately from current health so healing does not erase levelling progress.
+
 ### Rules
 
-- Level 1 needs 1 000 survived damage to level up; Level N needs N × 1 000 extra damage.
+- Level 1 needs 1 000 survived damage to level up.
+- Each later level-up needs `current level × 1 000` additional survived damage.
+- Survived-damage thresholds are therefore cumulative (1 000 total for level 2, 3 000 total for level 3, 6 000 total for level 4, ...).
 - Levelling happens after damage is received (not during), only if the character is still alive.
 - Maximum level is 10; no level is ever lost.
 
@@ -185,10 +193,11 @@ Covers **user story: Changing Level §1 and §3**.
 | --- | ----------------------------------------------------------- |
 | 1   | `character levels up after surviving required damage`       |
 | 2   | `damage can accumulate across multiple attacks`             |
-| 3   | `dead character does not level up`                          |
-| 4   | `level 2 character needs 2000 more damage to reach level 3` |
-| 5   | `character cannot exceed level 10`                          |
-| 6   | `level cannot decrease`                                     |
+| 3   | `surplus survived damage carries forward after levelling`   |
+| 4   | `dead character does not level up`                          |
+| 5   | `level 2 character needs 2000 more damage to reach level 3` |
+| 6   | `character cannot exceed level 10`                          |
+| 7   | `level cannot decrease`                                     |
 
 ---
 
@@ -196,9 +205,12 @@ Covers **user story: Changing Level §1 and §3**.
 
 Covers **user story: Changing Level §2**.
 
+**Design note:** extend faction bookkeeping to keep both current membership and a distinct-factions-ever-joined history.
+
 ### Rules
 
-- Level 1 needs 3 distinct factions joined (ever) to level up; Level N needs N × 3 additional distinct factions.
+- A level-up is earned each time the character reaches another milestone of 3 distinct factions ever joined (3, 6, 9, ...).
+- Re-joining or leaving a faction does not remove historical progress.
 - Maximum level still 10.
 
 ### TDD cycles
@@ -207,9 +219,10 @@ Covers **user story: Changing Level §2**.
 | --- | --------------------------------------------------------------------------- |
 | 1   | `character levels up after joining 3 distinct factions`                     |
 | 2   | `re-joining a faction does not count as a new distinct faction`             |
-| 3   | `level 2 character needs 6 total distinct factions to reach level 3`        |
-| 4   | `faction-based level gain respects level 10 cap`                            |
-| 5   | `damage-based and faction-based level gains are independent and cumulative` |
+| 3   | `leaving a faction does not remove historical faction progress`             |
+| 4   | `level 2 character needs 6 total distinct factions to reach level 3`        |
+| 5   | `previous damage-based levelling does not block later faction-based levels` |
+| 6   | `faction-based level gain respects level 10 cap`                            |
 
 ---
 
@@ -220,6 +233,7 @@ After each iteration:
 1. Run `npm run checks` — fix any lint, format, type or test failure before moving on.
 2. Refactor mercilessly while tests are green.
 3. Keep `Character` and `MagicalObject` cohesive; extract helpers if they grow large.
+4. When a rule depends on historical state (`survived damage`, `ever joined factions`), keep that history behind intent-revealing APIs rather than leaking mutable bookkeeping.
 
 ---
 
@@ -230,3 +244,4 @@ After each iteration:
 - No ESLint warnings (`npm run lint:fix`).
 - Prettier reports no diffs (`npm run format:fix`).
 - Every rule from `user-stories.md` is covered by at least one test.
+- The `src/magical-object.ts` placeholder and skeleton test have been replaced by real behaviour.
