@@ -23,3 +23,7 @@ An implementation of the RPG Combat rules engine. There are six user stories des
 ## Skills
 
 * When designing unit test cases: .agents/skills/unit-test-design/SKILL.md
+
+## Development plan
+
+Use the file `development-plan.md` to organize your work.
