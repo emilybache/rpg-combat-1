@@ -5,7 +5,7 @@
 We implement the RPG Combat rules engine in TypeScript using **TDD** (test-first, then refactor).
 Each iteration delivers one vertical slice of the user-stories, always leaving the build green.
 
-**Current status:** Iterations 0-6 are complete and the codebase is green. The remaining work is Iteration 7 below.
+**Current status:** Iterations 0-7 are complete and the codebase is green. Iteration 8 tracks test maintainability refactors.
 
 ---
 
@@ -223,6 +223,23 @@ Covers **user story: Changing Level §2**.
 | 4   | `level 2 character needs 6 total distinct factions to reach level 3`        |
 | 5   | `previous damage-based levelling does not block later faction-based levels` |
 | 6   | `faction-based level gain respects level 10 cap`                            |
+
+---
+
+## Iteration 8 — Test Maintainability Refactor
+
+**Goal:** keep behaviour coverage unchanged while improving readability and reducing repetitive setup in tests.
+
+### Refactoring targets
+
+- Extract common test fixtures used by multiple test files.
+- Prefer explicit one-scenario-per-test cases when they are easier to read during failures.
+- Replace unsafe test-only casts with clearer intent where framework/type tooling allows.
+
+### Done when
+
+- Behavioural expectations remain unchanged.
+- `npm run checks` is green after refactor.
 
 ---
 

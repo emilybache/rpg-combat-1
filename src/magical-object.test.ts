@@ -1,15 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { Character } from './character.ts';
 import { HealingObject, MagicalObject, MagicalWeapon } from './magical-object.ts';
-
-const createCharacter = (health = 1000, level = 1, alive = health > 0): Character => {
-  const character = new Character();
-  character.level = level;
-  character.health = health;
-  character.alive = alive;
-  return character;
-};
+import { createCharacter } from './test-fixtures.ts';
 
 class TestMagicalObject extends MagicalObject {}
 
@@ -102,7 +94,8 @@ describe('Character interactions with magical objects', () => {
     const healer = createCharacter();
     const object = new HealingObject(100);
 
-    healer.heal(object as unknown as Character, 20);
+    // @ts-expect-error Intentionally passing a non-character to verify runtime no-op behavior.
+    healer.heal(object, 20);
 
     expect(object.health).toBe(100);
   });

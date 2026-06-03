@@ -1,14 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { Character } from './character.ts';
-
-const createCharacter = (health = 1000, level = 1, alive = health > 0): Character => {
-  const character = new Character();
-  character.level = level;
-  character.health = health;
-  character.alive = alive;
-  return character;
-};
+import { createCharacter } from './test-fixtures.ts';
 
 describe('Character damage and health', () => {
   it('new character has 1000 health and is alive', () => {
