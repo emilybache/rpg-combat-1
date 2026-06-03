@@ -136,6 +136,87 @@ describe('Character levels and damage modifiers', () => {
   });
 });
 
+describe('Character changing level via survived damage', () => {
+  it('when a level 1 character survives 1000 damage then they level up to level 2', () => {
+    const character = new Character();
+    character.survivedDamage = 999;
+
+    character.receiveDamage(1);
+
+    expect(character.level).toBe(2);
+  });
+
+  it('when damage from multiple attacks accumulates to the threshold then the character levels up', () => {
+    const character = new Character();
+
+    character.receiveDamage(500);
+    character.health = 1000;
+
+    character.receiveDamage(500);
+
+    expect(character.level).toBe(2);
+  });
+
+  it('when surplus survived damage carries past a level threshold then it counts toward the next level', () => {
+    // Character is at level 2 with 200 surplus past the level-2 threshold (1000).
+    // With a per-level counter, 2000 more would be required; with cumulative tracking,
+    // only 1800 more is needed to reach the level-3 threshold of 3000 total.
+    const character = new Character();
+    character.level = 2;
+    character.survivedDamage = 1200; // 200 surplus past the level-2 threshold of 1000
+
+    character.receiveDamage(900); // health: 100, survivedDamage: 2100
+    character.health = 1000;
+    character.receiveDamage(900); // health: 100, survivedDamage: 3000 → level 3
+
+    expect(character.level).toBe(3);
+  });
+
+  it('when a character receives lethal damage then they do not level up', () => {
+    const character = new Character();
+    character.survivedDamage = 999;
+
+    character.receiveDamage(1000); // kills the character
+
+    expect(character.alive).toBe(false);
+    expect(character.level).toBe(1);
+  });
+
+  it('when a level 2 character survives an additional 2000 damage then they level up to level 3', () => {
+    const character = new Character();
+    character.level = 2;
+    character.survivedDamage = 2999; // 1 short of level-3 threshold (3000)
+
+    character.receiveDamage(1);
+
+    expect(character.level).toBe(3);
+  });
+
+  it('when a character at level 9 reaches the 45000 survived damage threshold then they level up to level 10 but not beyond', () => {
+    const character = new Character();
+    character.level = 9;
+    character.survivedDamage = 44999; // 1 short of level-10 threshold (45000)
+
+    character.receiveDamage(1); // reaches 45000 → level 10
+
+    expect(character.level).toBe(10);
+
+    character.receiveDamage(100); // more survived damage beyond cap
+
+    expect(character.level).toBe(10);
+  });
+
+  it('when a character has gained a level then their level cannot decrease from taking further damage', () => {
+    const character = new Character();
+    character.level = 2;
+    character.survivedDamage = 1000; // exactly at level-2 threshold
+
+    character.receiveDamage(100); // survivedDamage becomes 1100, still below level-3 threshold
+
+    expect(character.level).toBe(2);
+  });
+});
+
 describe('Character factions', () => {
   it('when a character is created then it belongs to no factions', () => {
     const character = createCharacter();

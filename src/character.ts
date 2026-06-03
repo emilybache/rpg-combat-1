@@ -7,6 +7,8 @@ export class Character {
 
   alive = true;
 
+  survivedDamage = 0;
+
   private readonly factionMembership = new FactionMembership();
 
   readonly factions = this.factionMembership.factions;
@@ -31,6 +33,11 @@ export class Character {
 
     this.health = Math.max(0, this.health - amount);
     this.alive = this.health > 0;
+
+    if (this.alive) {
+      this.survivedDamage += amount;
+      this.levelUpIfEarned();
+    }
   }
 
   heal(amount: number): void;
@@ -82,5 +89,18 @@ export class Character {
     }
 
     return amount;
+  }
+
+  private levelUpIfEarned(): void {
+    while (this.level < 10) {
+      // Cumulative threshold to reach (level + 1) = level * (level + 1) / 2 * 1000
+      // e.g. level 1→2: 1000, level 2→3: 3000 total, level 9→10: 45000 total
+      const threshold = (this.level * (this.level + 1) * 1000) / 2;
+      if (this.survivedDamage >= threshold) {
+        this.level += 1;
+      } else {
+        break;
+      }
+    }
   }
 }

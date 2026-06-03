@@ -5,7 +5,7 @@
 We implement the RPG Combat rules engine in TypeScript using **TDD** (test-first, then refactor).
 Each iteration delivers one vertical slice of the user-stories, always leaving the build green.
 
-**Current status:** Iterations 0-5 are complete and the codebase is green. The remaining work is Iterations 6-7 below.
+**Current status:** Iterations 0-6 are complete and the codebase is green. The remaining work is Iteration 7 below.
 
 ---
 
