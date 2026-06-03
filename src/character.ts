@@ -1,3 +1,5 @@
+import { FactionMembership } from './faction-membership.ts';
+
 export class Character {
   level = 1;
 
@@ -5,7 +7,9 @@ export class Character {
 
   alive = true;
 
-  readonly factions = new Set<string>();
+  private readonly factionMembership = new FactionMembership();
+
+  readonly factions = this.factionMembership.factions;
 
   get maxHealth(): number {
     return this.level >= 6 ? 1500 : 1000;
@@ -30,39 +34,34 @@ export class Character {
   heal(target: Character, amount: number): void;
   heal(targetOrAmount: Character | number, maybeAmount?: number): void {
     if (typeof targetOrAmount === 'number') {
-      this.applyHealingTo(this, targetOrAmount);
+      this.healTarget(this, targetOrAmount);
       return;
     }
 
-    const target = targetOrAmount;
-    const amount = maybeAmount ?? 0;
-
-    if (target !== this && !this.isAllyOf(target)) {
-      return;
-    }
-
-    this.applyHealingTo(target, amount);
+    this.healTarget(targetOrAmount, maybeAmount ?? 0);
   }
 
   joinFaction(faction: string): void {
-    this.factions.add(faction);
+    this.factionMembership.join(faction);
   }
 
   leaveFaction(faction: string): void {
-    this.factions.delete(faction);
+    this.factionMembership.leave(faction);
   }
 
   private isAllyOf(other: Character): boolean {
-    for (const faction of this.factions) {
-      if (other.factions.has(faction)) {
-        return true;
-      }
-    }
-
-    return false;
+    return this.factionMembership.sharesFactionWith(other.factionMembership);
   }
 
-  private applyHealingTo(target: Character, amount: number): void {
+  private canHeal(target: Character): boolean {
+    return target === this || this.isAllyOf(target);
+  }
+
+  private healTarget(target: Character, amount: number): void {
+    if (!this.canHeal(target)) {
+      return;
+    }
+
     if (!target.alive) {
       return;
     }

@@ -218,4 +218,3 @@ describe('Character factions', () => {
     expect(target.health).toBe(1000);
   });
 });
-
