@@ -21,9 +21,16 @@ export class Character {
     }
 
     const modifiedAmount = this.getModifiedDamageAmount(target, amount);
+    target.receiveDamage(modifiedAmount);
+  }
 
-    target.health = Math.max(0, target.health - modifiedAmount);
-    target.alive = target.health > 0;
+  receiveDamage(amount: number): void {
+    if (amount <= 0 || !this.alive) {
+      return;
+    }
+
+    this.health = Math.max(0, this.health - amount);
+    this.alive = this.health > 0;
   }
 
   heal(amount: number): void;
