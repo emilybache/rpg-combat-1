@@ -50,4 +50,37 @@ describe('Character damage and health', () => {
     expect(character.health).toBe(1000);
     expect(character.alive).toBe(true);
   });
+
+  it('when a living character heals after taking damage then health is restored by the healed amount', () => {
+    const character = new Character();
+
+    character.health = 700;
+
+    character.heal(200);
+
+    expect(character.health).toBe(900);
+    expect(character.alive).toBe(true);
+  });
+
+  it('when a living character heals beyond max health then health is capped at 1000', () => {
+    const character = new Character();
+
+    character.health = 950;
+
+    character.heal(200);
+
+    expect(character.health).toBe(1000);
+  });
+
+  it('when a dead character attempts to heal then health remains unchanged', () => {
+    const character = new Character();
+
+    character.health = 0;
+    character.alive = false;
+
+    character.heal(200);
+
+    expect(character.health).toBe(0);
+    expect(character.alive).toBe(false);
+  });
 });
