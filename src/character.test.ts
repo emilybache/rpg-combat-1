@@ -298,3 +298,96 @@ describe('Character factions', () => {
     expect(target.health).toBe(1000);
   });
 });
+
+describe('Character changing level via distinct factions ever joined', () => {
+  it('when a level 1 character joins 3 distinct factions then they level up to level 2', () => {
+    const character = createCharacter();
+
+    character.joinFaction('Knights');
+    character.joinFaction('Mages');
+    character.joinFaction('Hunters');
+
+    expect(character.level).toBe(2);
+  });
+
+  it('when a character re-joins a faction then it does not count as a new distinct faction for levelling', () => {
+    const character = createCharacter();
+
+    character.joinFaction('Knights');
+    character.leaveFaction('Knights');
+    character.joinFaction('Knights');
+    character.joinFaction('Mages');
+
+    expect(character.level).toBe(1);
+
+    character.joinFaction('Hunters');
+
+    expect(character.level).toBe(2);
+  });
+
+  it('when a character leaves factions then historical distinct faction progress is still kept', () => {
+    const character = createCharacter();
+
+    character.joinFaction('Knights');
+    character.joinFaction('Mages');
+    character.joinFaction('Hunters');
+    character.leaveFaction('Knights');
+    character.leaveFaction('Mages');
+    character.leaveFaction('Hunters');
+    character.joinFaction('Rangers');
+    character.joinFaction('Monks');
+    character.joinFaction('Bards');
+
+    expect(character.level).toBe(3);
+  });
+
+  it('when a level 2 character has joined only 5 total distinct factions then they remain level 2 until the 6th', () => {
+    const character = createCharacter();
+
+    character.joinFaction('Knights');
+    character.joinFaction('Mages');
+    character.joinFaction('Hunters');
+    character.joinFaction('Rangers');
+    character.joinFaction('Monks');
+
+    expect(character.level).toBe(2);
+
+    character.joinFaction('Bards');
+
+    expect(character.level).toBe(3);
+  });
+
+  it('when a character levels via damage first then later faction-based levelling still works', () => {
+    const character = createCharacter();
+    character.survivedDamage = 999;
+
+    character.receiveDamage(1);
+    character.joinFaction('Knights');
+    character.joinFaction('Mages');
+    character.joinFaction('Hunters');
+    character.joinFaction('Rangers');
+    character.joinFaction('Monks');
+
+    expect(character.level).toBe(2);
+
+    character.joinFaction('Bards');
+
+    expect(character.level).toBe(3);
+  });
+
+  it('when faction-based progression reaches level 10 then additional distinct factions do not increase level beyond 10', () => {
+    const character = createCharacter(1000, 9);
+
+    for (let index = 1; index <= 27; index += 1) {
+      character.joinFaction(`Faction-${index}`);
+    }
+
+    expect(character.level).toBe(10);
+
+    character.joinFaction('Faction-28');
+    character.joinFaction('Faction-29');
+    character.joinFaction('Faction-30');
+
+    expect(character.level).toBe(10);
+  });
+});

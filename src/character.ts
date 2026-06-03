@@ -53,6 +53,7 @@ export class Character {
 
   joinFaction(faction: string): void {
     this.factionMembership.join(faction);
+    this.levelUpIfEarned();
   }
 
   leaveFaction(faction: string): void {
@@ -93,14 +94,26 @@ export class Character {
 
   private levelUpIfEarned(): void {
     while (this.level < 10) {
-      // Cumulative threshold to reach (level + 1) = level * (level + 1) / 2 * 1000
-      // e.g. level 1→2: 1000, level 2→3: 3000 total, level 9→10: 45000 total
-      const threshold = (this.level * (this.level + 1) * 1000) / 2;
-      if (this.survivedDamage >= threshold) {
+      const hasEnoughSurvivedDamage = this.survivedDamage >= this.getDamageThresholdForNextLevel();
+      const hasEnoughDistinctFactions =
+        this.factionMembership.distinctEverJoinedCount >=
+        this.getDistinctFactionThresholdForNextLevel();
+
+      if (hasEnoughSurvivedDamage || hasEnoughDistinctFactions) {
         this.level += 1;
       } else {
         break;
       }
     }
+  }
+
+  private getDamageThresholdForNextLevel(): number {
+    // Cumulative threshold to reach (level + 1) = level * (level + 1) / 2 * 1000
+    // e.g. level 1→2: 1000, level 2→3: 3000 total, level 9→10: 45000 total
+    return (this.level * (this.level + 1) * 1000) / 2;
+  }
+
+  private getDistinctFactionThresholdForNextLevel(): number {
+    return this.level * 3;
   }
 }
