@@ -136,3 +136,85 @@ describe('Character levels and damage modifiers', () => {
     expect(character.health).toBe(1500);
   });
 });
+
+describe('Character factions', () => {
+  it('when a character is created then it belongs to no factions', () => {
+    const character = createCharacter();
+
+    expect(character.factions.size).toBe(0);
+  });
+
+  it('when a character joins a faction then that faction is added', () => {
+    const character = createCharacter();
+
+    character.joinFaction('Knights');
+
+    expect(character.factions.has('Knights')).toBe(true);
+  });
+
+  it('when a character leaves a faction then that faction is removed', () => {
+    const character = createCharacter();
+    character.joinFaction('Knights');
+
+    character.leaveFaction('Knights');
+
+    expect(character.factions.has('Knights')).toBe(false);
+  });
+
+  it('when two allied characters attempt damage then target health does not change', () => {
+    const attacker = createCharacter();
+    const target = createCharacter();
+    attacker.joinFaction('Knights');
+    target.joinFaction('Knights');
+
+    attacker.dealDamage(target, 100);
+
+    expect(target.health).toBe(1000);
+  });
+
+  it('when two non-allied characters deal damage then target health is reduced', () => {
+    const attacker = createCharacter();
+    const target = createCharacter();
+    attacker.joinFaction('Knights');
+    target.joinFaction('Mages');
+
+    attacker.dealDamage(target, 100);
+
+    expect(target.health).toBe(900);
+  });
+
+  it('when an ally heals another ally then target health increases up to max health', () => {
+    const healer = createCharacter();
+    const target = createCharacter(700);
+    healer.joinFaction('Knights');
+    target.joinFaction('Knights');
+
+    healer.heal(target, 200);
+
+    expect(target.health).toBe(900);
+  });
+
+  it('when a non-ally heals another character then target health remains unchanged', () => {
+    const healer = createCharacter();
+    const target = createCharacter(700);
+    healer.joinFaction('Knights');
+    target.joinFaction('Mages');
+
+    healer.heal(target, 200);
+
+    expect(target.health).toBe(700);
+  });
+
+  it('when a character shares any faction then they are allies and cannot damage each other', () => {
+    const attacker = createCharacter();
+    const target = createCharacter();
+    attacker.joinFaction('Knights');
+    attacker.joinFaction('Hunters');
+    target.joinFaction('Mages');
+    target.joinFaction('Hunters');
+
+    attacker.dealDamage(target, 100);
+
+    expect(target.health).toBe(1000);
+  });
+});
