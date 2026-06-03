@@ -1,4 +1,5 @@
 import { FactionMembership } from './faction-membership.ts';
+import { LevelUpRequirements } from './level-up-requirements.ts';
 
 export class Character {
   level = 1;
@@ -10,6 +11,8 @@ export class Character {
   survivedDamage = 0;
 
   private readonly factionMembership = new FactionMembership();
+
+  private readonly levelUpRequirements = new LevelUpRequirements();
 
   readonly factions = this.factionMembership.factions;
 
@@ -93,27 +96,14 @@ export class Character {
   }
 
   private levelUpIfEarned(): void {
-    while (this.level < 10) {
-      const hasEnoughSurvivedDamage = this.survivedDamage >= this.getDamageThresholdForNextLevel();
-      const hasEnoughDistinctFactions =
-        this.factionMembership.distinctEverJoinedCount >=
-        this.getDistinctFactionThresholdForNextLevel();
-
-      if (hasEnoughSurvivedDamage || hasEnoughDistinctFactions) {
-        this.level += 1;
-      } else {
-        break;
-      }
+    while (
+      this.levelUpRequirements.shouldLevelUp(
+        this.level,
+        this.survivedDamage,
+        this.factionMembership.distinctEverJoinedCount,
+      )
+    ) {
+      this.level += 1;
     }
-  }
-
-  private getDamageThresholdForNextLevel(): number {
-    // Cumulative threshold to reach (level + 1) = level * (level + 1) / 2 * 1000
-    // e.g. level 1→2: 1000, level 2→3: 3000 total, level 9→10: 45000 total
-    return (this.level * (this.level + 1) * 1000) / 2;
-  }
-
-  private getDistinctFactionThresholdForNextLevel(): number {
-    return this.level * 3;
   }
 }
