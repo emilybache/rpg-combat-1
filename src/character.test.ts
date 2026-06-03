@@ -2,17 +2,25 @@ import { describe, expect, it } from 'vitest';
 
 import { Character } from './character.ts';
 
+const createCharacter = (health = 1000, level = 1, alive = health > 0): Character => {
+  const character = new Character();
+  character.level = level;
+  character.health = health;
+  character.alive = alive;
+  return character;
+};
+
 describe('Character damage and health', () => {
   it('new character has 1000 health and is alive', () => {
-    const character = new Character();
+    const character = createCharacter();
 
     expect(character.health).toBe(1000);
     expect(character.alive).toBe(true);
   });
 
   it('dealing damage reduces target health', () => {
-    const attacker = new Character();
-    const target = new Character();
+    const attacker = createCharacter();
+    const target = createCharacter();
 
     attacker.dealDamage(target, 100);
 
@@ -20,10 +28,8 @@ describe('Character damage and health', () => {
   });
 
   it('health does not go below 0', () => {
-    const attacker = new Character();
-    const target = new Character();
-
-    target.health = 50;
+    const attacker = createCharacter();
+    const target = createCharacter(50);
 
     attacker.dealDamage(target, 200);
 
@@ -31,10 +37,8 @@ describe('Character damage and health', () => {
   });
 
   it('target dies when health reaches 0', () => {
-    const attacker = new Character();
-    const target = new Character();
-
-    target.health = 100;
+    const attacker = createCharacter();
+    const target = createCharacter(100);
 
     attacker.dealDamage(target, 100);
 
@@ -42,7 +46,7 @@ describe('Character damage and health', () => {
   });
 
   it('character cannot deal damage to itself', () => {
-    const character = new Character();
+    const character = createCharacter();
 
     expect(() => character.dealDamage(character, 100)).toThrowError(
       'A character cannot deal damage to itself',
@@ -52,9 +56,7 @@ describe('Character damage and health', () => {
   });
 
   it('when a living character heals after taking damage then health is restored by the healed amount', () => {
-    const character = new Character();
-
-    character.health = 700;
+    const character = createCharacter(700);
 
     character.heal(200);
 
@@ -63,9 +65,7 @@ describe('Character damage and health', () => {
   });
 
   it('when a living character heals beyond max health then health is capped at 1000', () => {
-    const character = new Character();
-
-    character.health = 950;
+    const character = createCharacter(950);
 
     character.heal(200);
 
@@ -73,10 +73,7 @@ describe('Character damage and health', () => {
   });
 
   it('when a dead character attempts to heal then health remains unchanged', () => {
-    const character = new Character();
-
-    character.health = 0;
-    character.alive = false;
+    const character = createCharacter(0, 1, false);
 
     character.heal(200);
 
@@ -87,17 +84,14 @@ describe('Character damage and health', () => {
 
 describe('Character levels and damage modifiers', () => {
   it('when a character is created then level starts at 1', () => {
-    const character = new Character();
+    const character = createCharacter();
 
     expect(character.level).toBe(1);
   });
 
   it('when target level is within 4 levels of attacker then damage is not modified', () => {
-    const attacker = new Character();
-    const target = new Character();
-
-    attacker.level = 1;
-    target.level = 5;
+    const attacker = createCharacter(1000, 1);
+    const target = createCharacter(1000, 5);
 
     attacker.dealDamage(target, 100);
 
@@ -105,11 +99,8 @@ describe('Character levels and damage modifiers', () => {
   });
 
   it('when target is 5 or more levels above attacker then damage is reduced by half', () => {
-    const attacker = new Character();
-    const target = new Character();
-
-    attacker.level = 1;
-    target.level = 6;
+    const attacker = createCharacter(1000, 1);
+    const target = createCharacter(1000, 6);
 
     attacker.dealDamage(target, 100);
 
@@ -117,11 +108,8 @@ describe('Character levels and damage modifiers', () => {
   });
 
   it('when target is 5 or more levels below attacker then damage is increased by 50 percent', () => {
-    const attacker = new Character();
-    const target = new Character();
-
-    attacker.level = 6;
-    target.level = 1;
+    const attacker = createCharacter(1000, 6);
+    const target = createCharacter(1000, 1);
 
     attacker.dealDamage(target, 100);
 
@@ -129,26 +117,19 @@ describe('Character levels and damage modifiers', () => {
   });
 
   it('when character level is 5 then max health remains 1000', () => {
-    const character = new Character();
-
-    character.level = 5;
+    const character = createCharacter(1000, 5);
 
     expect(character.maxHealth).toBe(1000);
   });
 
   it('when character level is 6 then max health increases to 1500', () => {
-    const character = new Character();
-
-    character.level = 6;
+    const character = createCharacter(1000, 6);
 
     expect(character.maxHealth).toBe(1500);
   });
 
   it('when a level 6 character heals then health cannot exceed 1500', () => {
-    const character = new Character();
-
-    character.level = 6;
-    character.health = 1450;
+    const character = createCharacter(1450, 6);
 
     character.heal(200);
 
