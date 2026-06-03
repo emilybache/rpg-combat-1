@@ -84,3 +84,74 @@ describe('Character damage and health', () => {
     expect(character.alive).toBe(false);
   });
 });
+
+describe('Character levels and damage modifiers', () => {
+  it('when a character is created then level starts at 1', () => {
+    const character = new Character();
+
+    expect(character.level).toBe(1);
+  });
+
+  it('when target level is within 4 levels of attacker then damage is not modified', () => {
+    const attacker = new Character();
+    const target = new Character();
+
+    attacker.level = 1;
+    target.level = 5;
+
+    attacker.dealDamage(target, 100);
+
+    expect(target.health).toBe(900);
+  });
+
+  it('when target is 5 or more levels above attacker then damage is reduced by half', () => {
+    const attacker = new Character();
+    const target = new Character();
+
+    attacker.level = 1;
+    target.level = 6;
+
+    attacker.dealDamage(target, 100);
+
+    expect(target.health).toBe(950);
+  });
+
+  it('when target is 5 or more levels below attacker then damage is increased by 50 percent', () => {
+    const attacker = new Character();
+    const target = new Character();
+
+    attacker.level = 6;
+    target.level = 1;
+
+    attacker.dealDamage(target, 100);
+
+    expect(target.health).toBe(850);
+  });
+
+  it('when character level is 5 then max health remains 1000', () => {
+    const character = new Character();
+
+    character.level = 5;
+
+    expect(character.maxHealth).toBe(1000);
+  });
+
+  it('when character level is 6 then max health increases to 1500', () => {
+    const character = new Character();
+
+    character.level = 6;
+
+    expect(character.maxHealth).toBe(1500);
+  });
+
+  it('when a level 6 character heals then health cannot exceed 1500', () => {
+    const character = new Character();
+
+    character.level = 6;
+    character.health = 1450;
+
+    character.heal(200);
+
+    expect(character.health).toBe(1500);
+  });
+});
