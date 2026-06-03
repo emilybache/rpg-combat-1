@@ -45,12 +45,11 @@ describe('Character damage and health', () => {
     expect(target.alive).toBe(false);
   });
 
-  it('character cannot deal damage to itself', () => {
+  it('when a character attempts to damage itself then health remains unchanged', () => {
     const character = createCharacter();
 
-    expect(() => character.dealDamage(character, 100)).toThrowError(
-      'A character cannot deal damage to itself',
-    );
+    character.dealDamage(character, 100);
+
     expect(character.health).toBe(1000);
     expect(character.alive).toBe(true);
   });

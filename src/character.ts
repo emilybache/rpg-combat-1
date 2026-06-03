@@ -16,11 +16,7 @@ export class Character {
   }
 
   dealDamage(target: Character, amount: number): void {
-    if (target === this) {
-      throw new Error('A character cannot deal damage to itself');
-    }
-
-    if (this.isAllyOf(target)) {
+    if (target === this || this.isAllyOf(target)) {
       return;
     }
 
